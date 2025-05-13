@@ -183,8 +183,8 @@
 
   // Afficher les frontières floutées sauf Israël/Palestine
   function style(feature) {
-    const name = feature.properties.admin;
-    const isVisible = name === "Israel" || name === "Palestine";
+    const name = feature.properties.name;
+    const isVisible = name === "Israel";
     return {
       fillColor: isVisible ? "#ffffff00" : "#cccccc",
       color: "#999",
