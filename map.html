@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte des Bureaux - רשות האכיפה והגבייה</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    h1 {
+    margin: 0;
+    padding: 20px;
+    height: 80px;
+    text-align: center;
+    box-sizing: border-box;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 85vh;
+    }
+
+    .sidebar {
+      flex: 1 1 300px;
+      background-color: #f9f9f9;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid #ddd;
+    }
+
+    #reset-map {
+      height: 50px;
+      width: 100%;
+      margin-bottom: 20px;
+      background-color: #d2eaff;
+      border: 1px solid #3399ff;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #reset-map:hover {
+      background-color: #aad4f5;
+    }
+
+    #map {
+      flex: 3;
+      height: 100%;
+      border-left: 2px solid #ccc;
+    }
+
+    #buttons-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .sidebar button {
+      height: 50px;
+      width: 100%;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      white-space: normal;
+      transition: background-color 0.3s;
+      box-sizing: border-box;
+    }
+
+    .sidebar button:hover {
+      background-color: #dcdcdc;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>רשת הלשכות - רשות האכיפה והגבייה</h1>
+
+<div class="container">
+  <div class="sidebar">
+    <button id="reset-map">🔄 Réinitialiser la carte</button>
+    <div id="buttons-container"></div>
+  </div>
+
+  <div id="map"></div>
+</div>
+
+<!-- JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<script>
+  const map = L.map('map').setView([31.7683, 35.2137], 7);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  const markers = L.markerClusterGroup({ maxClusterRadius: 30 });
+  const markerMap = {};
+  const buttonContainer = document.getElementById("buttons-container");
+  const initialView = { lat: 31.7683, lng: 35.2137, zoom: 7 };
+
+  let lastMarker = null;
+
+  const bureaux = [
+    { nom: "מטה", lat: 31.790863702872414, lng: 35.2027318423282 },
+    { nom: "לשכת ירושלים", lat: 31.769, lng: 35.2 },
+    { nom: "לשכת תל אביב", lat: 32.0622, lng: 34.7806 },
+    { nom: "לשכת חיפה", lat: 32.8191, lng: 34.9984 },
+    { nom: "לשכת באר שבע", lat: 31.252, lng: 34.7915 },
+    { nom: "לשכת אשדוד", lat: 31.8014, lng: 34.6435 },
+    { nom: "לשכת אשקלון", lat: 31.6688, lng: 34.5743 },
+    { nom: "לשכת עכו", lat: 32.9281, lng: 35.0827 },
+    { nom: "לשכת נצרת עילית", lat: 32.7036, lng: 35.3064 },
+    { nom: "לשכת נתניה", lat: 32.3294, lng: 34.8579 },
+    { nom: "לשכת פתח תקווה", lat: 32.0889, lng: 34.8864 },
+    { nom: "לשכת ראשון לציון", lat: 31.963, lng: 34.8003 },
+    { nom: "לשכת רחובות", lat: 31.8948, lng: 34.8113 },
+    { nom: "לשכת רמלה", lat: 31.9316, lng: 34.8668 },
+    { nom: "לשכת חדרה", lat: 32.435, lng: 34.9196 },
+    { nom: "לשכת טבריה", lat: 32.794, lng: 35.5312 },
+    { nom: "לשכת עפולה", lat: 32.6074, lng: 35.2873 },
+    { nom: "לשכת בית שאן", lat: 32.4976, lng: 35.5 },
+    { nom: "לשכת דימונה", lat: 31.0708, lng: 35.033 },
+    { nom: "לשכת צפת", lat: 32.9646, lng: 35.4966 },
+    { nom: "לשכת קריית ביאליק", lat: 32.827, lng: 35.0792 },
+    { nom: "לשכת קריית שמונה", lat: 33.2082, lng: 35.5684 },
+    { nom: "לשכת אילת", lat: 29.5577, lng: 34.9519 },
+    { nom: "לשכת כפר סבא", lat: 32.175, lng: 34.906 }
+  ];
+
+  // Création des marqueurs et boutons
+  bureaux.forEach(function(bureau) {
+    const popupContent = `<strong>${bureau.nom}</strong>`;
+    const marker = L.marker([bureau.lat, bureau.lng]).bindPopup(popupContent);
+    markers.addLayer(marker);
+    markerMap[bureau.nom] = marker;
+
+    const button = document.createElement("button");
+    button.textContent = bureau.nom;
+
+    button.onclick = function () {
+      if (lastMarker) {
+        lastMarker.closePopup();
+        map.flyTo(lastMarker.getLatLng(), 14, { duration: 1.5 });
+      }
+
+      setTimeout(() => {
+        map.flyTo([bureau.lat, bureau.lng], 14, { duration: 1.5 });
+        marker.openPopup();
+        lastMarker = marker;
+      }, 600);
+    };
+
+    buttonContainer.appendChild(button);
+  });
+
+  map.addLayer(markers);
+
+  // Réinitialisation de la carte
+  document.getElementById("reset-map").onclick = function () {
+    map.flyTo([initialView.lat, initialView.lng], initialView.zoom, { duration: 1.5 });
+    if (lastMarker) {
+      lastMarker.closePopup();
+      lastMarker = null;
+    }
+  };
+</script>
+
+</body>
+</html>
