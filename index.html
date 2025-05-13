@@ -127,67 +127,32 @@
   let lastMarker = null;
 
   fetch("data/offices.json")
-    .then(res => res.json())
-    .then(offices => {
-      bureaux.forEach(function(offices) {
-        const popupContent = `<strong>${offices.name}</strong><br><small>${offices.address}</small>`;
-        const marker = L.marker([offices.lat, offices.lng]).bindPopup(popupContent);
-        markers.addLayer(marker);
-        markerMap[offices.name] = marker;
+  .then(res => res.json())
+  .then(offices => {
+    offices.forEach(function(office) {
+      const popupContent = `<strong>${office.name}</strong><br><small>${office.address}</small>`;
+      const marker = L.marker([office.lat, office.lng]).bindPopup(popupContent);
+      markers.addLayer(marker);
 
-        const button = document.createElement("button");
-        button.textContent = offices.name;
+      const button = document.createElement("button");
+      button.textContent = office.name;
 
-        button.onclick = function () {
-          if (lastMarker) {
-            lastMarker.closePopup();
-            map.flyTo(lastMarker.getLatLng(), 14, { duration: 1.5 });
-          }
+      button.onclick = function () {
+        if (lastMarker) {
+          lastMarker.closePopup();
+        }
 
-          setTimeout(() => {
-            map.flyTo([offices.lat, offices.lng], 14, { duration: 1.5 });
-            marker.openPopup();
-            lastMarker = marker;
-          }, 600);
-        };
-
-        buttonContainer.appendChild(button);
-      });
-
-      map.addLayer(markers);
-    });
-
-
-
-
-
-  // Création des marqueurs et boutons
-  bureaux.forEach(function(bureau) {
-    const popupContent = `<strong>${bureau.nom}</strong>`;
-    const marker = L.marker([bureau.lat, bureau.lng]).bindPopup(popupContent);
-    markers.addLayer(marker);
-    markerMap[bureau.nom] = marker;
-
-    const button = document.createElement("button");
-    button.textContent = bureau.nom;
-
-    button.onclick = function () {
-      if (lastMarker) {
-        lastMarker.closePopup();
-        map.flyTo(lastMarker.getLatLng(), 14, { duration: 1.5 });
-      }
-
-      setTimeout(() => {
-        map.flyTo([bureau.lat, bureau.lng], 14, { duration: 1.5 });
+        map.flyTo([office.lat, office.lng], 14, { duration: 1.5 });
         marker.openPopup();
         lastMarker = marker;
-      }, 600);
-    };
+      };
 
-    buttonContainer.appendChild(button);
+      buttonContainer.appendChild(button);
+    });
+
+    map.addLayer(markers);
   });
 
-  map.addLayer(markers);
 
   // Réinitialisation de la carte
   document.getElementById("reset-map").onclick = function () {
